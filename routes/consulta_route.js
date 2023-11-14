@@ -4,6 +4,6 @@ const { consultaGet } = require('../controllers/consulta_controller')
 
 const router = Router();
 
-router.get('/', consultaGet );
+router.post('/', consultaGet );
 
 module.exports = router;
