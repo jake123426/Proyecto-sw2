@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 
+
 class Server {
 
     constructor() {
         this.app  = express();
         this.port = process.env.PORT || 3000;
         this.consultasPath = '/api/consulta';
+        this.dialogflowPath = '/api/dialogflow';
 
         // Conectar a base de datos
         //this.conectarDB();
@@ -38,6 +40,7 @@ class Server {
 
     routes() {
         this.app.use( this.consultasPath, require('../routes/consulta_route'));
+        this.app.use( this.dialogflowPath, require('../routes/dialogflow_route'))
     }
 
     listen() {
