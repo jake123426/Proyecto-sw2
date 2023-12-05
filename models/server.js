@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-
+const { dbConexion } = require('../DB/conexion');
 
 class Server {
 
@@ -11,7 +11,7 @@ class Server {
         this.dialogflowPath = '/api/dialogflow';
 
         // Conectar a base de datos
-        //this.conectarDB();
+        this.conectarDB();
 
         // Middlewares
         this.middlewares();
@@ -20,9 +20,14 @@ class Server {
         this.routes();
     }
 
-    // async conectarDB() {
-    //     await dbConnection();
-    // }
+    async conectarDB() {
+        try {
+            await dbConexion.authenticate();
+            console.log('Base de Datos Online');
+        } catch (error) {
+            console.error('No se pudo conectar a la BD:', error);
+        }
+    }
 
 
     middlewares() {
