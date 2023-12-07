@@ -1,6 +1,8 @@
 const { response, request } = require('express');
 
-const consultaChatGPT = require('../helpers/openaiUtils');
+const { consultaChatGPT } = require('../helpers/openaiUtils');
+
+
 
 const consultaGet = async (req = request, res = response) => {
 

@@ -24,4 +24,77 @@ const consultaChatGPT =  async ( prompt ) => {
     
 }
 
-module.exports = consultaChatGPT;
+const validarPregunta = async ( pregunta, respuesta ) => {    
+    let prompt = `Respóndeme con un true o false sí para la siguiente pregunta: ${pregunta}, la siguiente respuesta es correcta: ${respuesta} `;
+    console.log( prompt );
+    let resultado = await consultaChatGPT( prompt );        
+    let res = resultado.toLowerCase();
+    console.log( res );    
+    if ( res.includes("true") === true){  
+        console.log("VERDADERO"); 
+        return true;
+    } else {     
+        console.log("FALSO");   
+        return false;
+    }    
+}
+
+const elaborarCuestionario = ( cuestionario, modulos ) => {
+    var cuestionarioArray = cuestionario.map((registro) => ({
+        id: registro.id,
+        texto: registro.texto        
+    }));
+    const objeto = {};
+    const nroModulos = modulos;  
+    for (let i = 1; i <= nroModulos; i++) {
+        objeto[`B${i}`] = {};
+        var preguntas = cuestionarioArray[i-1].texto
+        var preguntasArray = preguntas.split(';');
+        preguntasArray.forEach((pregunta, index) => {
+            objeto[`B${i}`][`${index + 1}`] = pregunta.trim();
+        });        
+    }
+    let preguntasAleatorias = seleccionarPreguntasAleatorias( objeto );
+    return preguntasAleatorias;
+}
+
+const seleccionarPreguntasAleatorias = ( objetoPreguntas ) => {
+    const preguntasAleatorias = {};
+    const maxPreguntas = 5; // Número de preguntas a seleccionar
+
+    for (let categoria in objetoPreguntas) {
+        const preguntasCategoria = objetoPreguntas[categoria];
+        const preguntasKeys = Object.keys(preguntasCategoria);
+        const preguntasSeleccionadas = {};
+        // Generar índices aleatorios únicos para seleccionar preguntas
+        const preguntasIndicesAleatorios = [];
+        while ( preguntasIndicesAleatorios.length < maxPreguntas ) {
+            const indiceAleatorio = Math.floor(Math.random() * preguntasKeys.length);
+            if ( !preguntasIndicesAleatorios.includes(indiceAleatorio) ) {
+                preguntasIndicesAleatorios.push(indiceAleatorio);
+            }
+        }
+        // Extraer y asignar preguntas aleatorias a la nueva estructura de datos
+        preguntasIndicesAleatorios.forEach((indice) => {
+            const clave = preguntasKeys[indice];
+            preguntasSeleccionadas[clave] = preguntasCategoria[clave];
+        });
+        // Agregar las preguntas seleccionadas a la nueva estructura por categoría
+        preguntasAleatorias[categoria] = preguntasSeleccionadas;
+    }    
+    return preguntasAleatorias;
+}
+
+const extraerPregunta = ( preguntas, modulo ) => {
+    let clave = Object.keys( preguntas[`B${modulo}`] )[0]
+    let pregunta = preguntas[`B${modulo}`][ clave ];
+    delete preguntas[`B${modulo}`][ clave ];
+    return pregunta;
+}
+
+module.exports = {
+    consultaChatGPT,
+    validarPregunta,
+    elaborarCuestionario,
+    extraerPregunta
+}
