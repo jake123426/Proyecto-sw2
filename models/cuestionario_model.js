@@ -3,6 +3,10 @@ const { dbConexion } = require('../DB/conexion')
 
 const Cuestionario = dbConexion.define('cuestionario', {
     // Model attributes are defined here
+    topico: {
+        type: DataTypes.STRING(255),
+        allowNull: false        
+    },        
     texto: {
         type: DataTypes.TEXT,
         allowNull: false        

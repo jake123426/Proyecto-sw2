@@ -37,13 +37,13 @@ const cuestionarioGetOne = async ( req = request, res = response ) => {
 
 const cuestionarioCreate = async ( req = request, res = response ) => {   
     
-    const { texto, usuario_id, modulo_id } = req.body    
+    const { topico,  texto, usuario_id, modulo_id } = req.body    
     try {        
         validarID( usuario_id, "usuario", res );
         validarID( modulo_id, "modulo", res );        
 
         var cuestionario = await Cuestionario.create({ 
-            texto, usuario_id, modulo_id
+            topico, texto, usuario_id, modulo_id
         })
         
         res.status(200).json({
@@ -62,7 +62,7 @@ const cuestionarioCreate = async ( req = request, res = response ) => {
 
 const cuestionarioUpdate = async(req, res = response) => {
     const { id } = req.params;        
-    const { texto, usuario_id, modulo_id } = req.body    
+    const { topico, texto, usuario_id, modulo_id } = req.body    
     
     try {
         if ( usuario_id ) validarID( usuario_id, "usuario", res );
@@ -74,6 +74,7 @@ const cuestionarioUpdate = async(req, res = response) => {
                 msg: 'No existe el cuestionario'
             })
         }
+        cuestionario.topico = topico ?? cuestionario.topico;
         cuestionario.texto = texto ?? cuestionario.texto;
         cuestionario.usuario_id = usuario_id ?? cuestionario.usuario_id;
         cuestionario.modulo_id = modulo_id ?? cuestionario.modulo_id;
