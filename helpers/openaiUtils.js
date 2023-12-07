@@ -25,7 +25,7 @@ const consultaChatGPT =  async ( prompt ) => {
 }
 
 const validarPregunta = async ( pregunta, respuesta ) => {    
-    let prompt = `Respóndeme con un true o false sí para la siguiente pregunta: ${pregunta}, la siguiente respuesta es correcta: ${respuesta} `;
+    let prompt = `Respóndeme solamente con un true o false sí para la siguiente pregunta: ${pregunta}, esta respuesta: ${respuesta} es gramaticalmente correcta`;
     console.log( prompt );
     let resultado = await consultaChatGPT( prompt );        
     let res = resultado.toLowerCase();
