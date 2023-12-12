@@ -19,22 +19,18 @@ const consultaChatGPT =  async ( prompt ) => {
     const chatCompletion  = await openai.chat.completions.create( apiRequestBody );    
     
     // const completionResp = completion.data.choices[0].message.content;    
-    
     return chatCompletion.choices[0].message.content;
     
 }
 
 const validarPregunta = async ( pregunta, respuesta ) => {    
-    let prompt = `Respóndeme solamente con un true o false sí para la siguiente pregunta: ${pregunta}, esta respuesta: ${respuesta} es gramaticalmente correcta`;
-    console.log( prompt );
+    let prompt = `Respóndeme solamente con un true o false sí para la siguiente pregunta en ingles: ${pregunta}, la siguiente respuesta es gramaticalmente correcta: ${respuesta}`;    
     let resultado = await consultaChatGPT( prompt );        
     let res = resultado.toLowerCase();
-    console.log( res );    
-    if ( res.includes("true") === true){  
-        console.log("VERDADERO"); 
+        
+    if ( res.includes("true") === true){         
         return true;
-    } else {     
-        console.log("FALSO");   
+    } else {           
         return false;
     }    
 }

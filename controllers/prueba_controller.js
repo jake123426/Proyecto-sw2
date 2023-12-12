@@ -46,8 +46,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
     const { respuesta } = req.body 
     try {        
         let resultado = await validarPregunta( preguntaActual, respuesta );
-        if ( resultado  === true) {   
-            console.log( "Entre al TRUE de validar pregunta" );
+        if ( resultado  === true) {            
             if ( cantPreguntas >= 2 ) {
                 nivelActual++;
                 cantPreguntas = 0;
@@ -72,8 +71,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
                     cuestionario 
                 });
             }
-        } else {
-            console.log( "Entre al FALSE de validar pregunta" );            
+        } else {                        
             nivelActual--;
             cantPreguntas = 0;
             if ( nivelActual < 1 ){
