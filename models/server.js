@@ -13,6 +13,7 @@ class Server {
         this.cuestionarioPath = '/api/cuestionario';
         this.usuarioPath = '/api/usuarios';
         this.moduloPath = '/api/modulos';
+        this.reportePath = '/api/reporte';
 
         // Conectar a base de datos
         this.conectarDB();
@@ -54,6 +55,7 @@ class Server {
         this.app.use( this.cuestionarioPath, require('../routes/cuestionario_route'));
         this.app.use( this.usuarioPath, require('../routes/usuario_route'));
         this.app.use( this.moduloPath, require('../routes/modulo_route'));
+        this.app.use( this.reportePath, require('../routes/reporte_route'));
     }
 
     listen() {
