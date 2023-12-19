@@ -24,7 +24,10 @@ const pruebaInit = async ( req = request, res = response ) => {
         cantPreguntas = 0;
         cuestionario = {}; 
         preguntaActual = "";
-        let preguntas = await Cuestionario.findAll({ limit: cant})
+        let preguntas = await Cuestionario.findAll({ 
+            limit: cant, 
+            order: [['id', 'ASC']]
+        })
         let preguntasAleatorias = elaborarCuestionario( preguntas, cant );
         cuestionario = preguntasAleatorias;
         preguntaActual = extraerPregunta( cuestionario, nivelActual );
@@ -50,7 +53,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
             if ( cantPreguntas >= 2 ) {
                 nivelActual++;
                 cantPreguntas = 0;
-                if ( nivelActual > modulo ){
+                if ( nivelActual > modulo ){ 
                     res.status(200).json({
                         msg: "Prueba finalizada",
                         resultado: `B${modulo}`
