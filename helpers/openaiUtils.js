@@ -23,9 +23,12 @@ const consultaChatGPT =  async ( prompt ) => {
     
 }
 
-const validarPregunta = async ( pregunta, respuesta ) => {    
-    let prompt = `Respóndeme solamente con un true o false sí para la siguiente pregunta en ingles: ${pregunta}, la siguiente respuesta es gramaticalmente correcta: ${respuesta}`;    
-    let resultado = await consultaChatGPT( prompt );        
+const validarPregunta = async ( pregunta, respuesta ) => {
+    
+    let prompt = `Respóndeme solamente con un true o false sí para la siguiente pregunta en ingles: '${pregunta}', la siguiente respuesta es semanticamente y gramaticalmente correcta: '${respuesta}' `;    
+    console.log(prompt);        
+    let resultado = await consultaChatGPT( prompt );
+    console.log("LAS REPUESTA ES: " , resultado);
     let res = resultado.toLowerCase();
         
     if ( res.includes("true") === true){         
