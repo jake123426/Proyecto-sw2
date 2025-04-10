@@ -7,6 +7,7 @@ class Server {
     constructor() {
         this.app  = express();
         this.port = process.env.PORT || 3000;
+        this.env = process.env.NODE_ENV
         this.consultasPath = '/api/consulta';
         this.dialogflowPath = '/api/dialogflow';
         this.pruebaPath = '/api/prueba';
@@ -60,7 +61,7 @@ class Server {
 
     listen() {
         this.app.listen( this.port, () => {
-            console.log('Servidor corriendo en puerto', this.port );
+            console.log(`Servidor en entorno '${this.env}' escuchando en puerto ${this.port}`);
         });
     }
 
