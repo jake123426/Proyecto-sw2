@@ -42,7 +42,7 @@ const usuarioUpdate = async(req, res = response) => {
     try {
         let estudiante = await Usuario.findByPk( id );    
         if ( !estudiante ){
-            res.status(400).json({
+            return res.status(400).json({
                 msg: 'No se encuentra registrado el estudiante con ese ID'
             })
         }
@@ -52,7 +52,7 @@ const usuarioUpdate = async(req, res = response) => {
         estudiante.telefono = telefono ?? estudiante.telefono;
         console.log(estudiante.nombre)
         await estudiante.save();     
-        res.status(200).json({
+        return res.status(200).json({
             msg: 'El estudiante ha sido actualizado',
             estudiante            
         })
@@ -82,7 +82,7 @@ const usuarioGetOne = async ( req = request, res = response ) => {
     try {        
         let usuario = await Usuario.findByPk( id );
         if ( !usuario ){
-            res.status(400).json({
+            return res.status(400).json({
                 msg: 'No existe el usuario solicitado'
             })
         }       

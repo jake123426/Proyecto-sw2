@@ -4,10 +4,11 @@ const { dbConexion } = require('../DB/conexion');
 
 class Server {
 
-    constructor() {
+    constructor({ db_conection = true} = {}) {
         this.app  = express();
         this.port = process.env.PORT || 3000;
-        this.env = process.env.NODE_ENV
+        this.env = process.env.NODE_ENV;
+        this.db_conection = db_conection;
         this.consultasPath = '/api/consulta';
         this.dialogflowPath = '/api/dialogflow';
         this.pruebaPath = '/api/prueba';
@@ -27,11 +28,13 @@ class Server {
     }
 
     async conectarDB() {
-        try {
-            await dbConexion.authenticate();
-            console.log('Base de Datos Online');
-        } catch (error) {
-            console.error('No se pudo conectar a la BD:', error);
+        if ( this.db_conection ){
+            try {
+                await dbConexion.authenticate();
+                console.log('Base de Datos Online');
+            } catch (error) {
+                console.error('No se pudo conectar a la BD:', error);
+            }
         }
     }
 

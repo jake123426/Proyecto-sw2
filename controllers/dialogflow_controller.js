@@ -38,7 +38,7 @@ const detectIntent = async (req = request, res = response) => {
     const responseData = await sessionClient.detectIntent(request);   
     // const result = responses[0].queryResult;    
     
-    res.status(200).json( responseData[0].queryResult );
+    return res.status(200).json( responseData[0].queryResult );
 
 }
 

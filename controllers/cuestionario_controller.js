@@ -7,7 +7,7 @@ const Cuestionario = require('../models/cuestionario_model');
 const cuestionarioGet = async ( req = request, res = response ) => {    
     try {
         let cuestionario = await Cuestionario.findAll();
-        res.status(200).json( cuestionario );        
+        return res.status(200).json( cuestionario );        
     } catch ( error ) {
         console.error(error);
         res.status(500).json({
@@ -21,11 +21,11 @@ const cuestionarioGetOne = async ( req = request, res = response ) => {
     try {        
         let cuestionario = await Cuestionario.findByPk( id );
         if ( !cuestionario ){
-            res.status(400).json({
+            return res.status(400).json({
                 msg: 'No existe el cuestionario especificado'
             })
         }       
-        res.status(200).json( cuestionario );
+        return res.status(200).json( cuestionario );
     } catch ( error ) {
         console.error(error);
         res.status(500).json({
@@ -46,7 +46,7 @@ const cuestionarioCreate = async ( req = request, res = response ) => {
             topico, texto, usuario_id, modulo_id
         })
         
-        res.status(200).json({
+        return res.status(200).json({
             msg: 'El cuestionario ha sido creado',
             cuestionario            
         })
@@ -70,7 +70,7 @@ const cuestionarioUpdate = async(req, res = response) => {
 
         var cuestionario = await Cuestionario.findByPk( id );    
         if ( !cuestionario ){
-            res.status(400).json({
+            return res.status(400).json({
                 msg: 'No existe el cuestionario'
             })
         }
@@ -80,7 +80,7 @@ const cuestionarioUpdate = async(req, res = response) => {
         cuestionario.modulo_id = modulo_id ?? cuestionario.modulo_id;
 
         await cuestionario.save()     
-        res.status(200).json({
+        return res.status(200).json({
             msg: 'El cuestionario ha sido actualizado',
             cuestionario            
         })
@@ -98,7 +98,7 @@ const validarID = async ( id, modelo, res ) => {
         case "usuario":
             const usuario = await Usuario.findByPk( id );
             if ( !usuario ){
-                res.status(400).json({
+                return res.status(400).json({
                     msg: 'No existe el usuario'
                 })
             };
@@ -106,7 +106,7 @@ const validarID = async ( id, modelo, res ) => {
         case "modulo":
             const moudulo = await Modulo.findByPk( id );
             if ( !moudulo ){
-                res.status(400).json({
+                return res.status(400).json({
                     msg: 'No existe el modulo'
                 })
             };

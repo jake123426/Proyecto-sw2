@@ -54,14 +54,14 @@ const siguientePregunta = async ( req = request, res = response ) => {
                 nivelActual++;
                 cantPreguntas = 0;
                 if ( nivelActual > modulo ){ 
-                    res.status(200).json({
+                    return res.status(200).json({
                         msg: "Prueba finalizada",
                         resultado: `B${modulo}`
                     });
                 } else {
                     cantPreguntas++;
                     preguntaActual = extraerPregunta( cuestionario, nivelActual );                    
-                    res.status(200).json({ 
+                    return res.status(200).json({ 
                         preguntaActual,
                         cuestionario 
                     });
@@ -69,7 +69,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
             } else {
                 cantPreguntas++;
                 preguntaActual = extraerPregunta( cuestionario, nivelActual );                    
-                res.status(200).json({ 
+                return res.status(200).json({ 
                     preguntaActual,
                     cuestionario 
                 });
@@ -78,7 +78,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
             nivelActual--;
             cantPreguntas = 0;
             if ( nivelActual < 1 ){
-                res.status(200).json({
+                return res.status(200).json({
                     msg: "Prueba finalizada",
                     resultado: `B1`
                 });
@@ -86,7 +86,7 @@ const siguientePregunta = async ( req = request, res = response ) => {
                 modulo = nivelActual;
                 cantPreguntas++;
                 preguntaActual = extraerPregunta( cuestionario, nivelActual );                    
-                res.status(200).json({ 
+                return res.status(200).json({ 
                     preguntaActual,
                     cuestionario 
                 });
@@ -105,7 +105,7 @@ const validarID = async ( id, modelo, res ) => {
         case "usuario":
             const usuario = await Usuario.findByPk( id );
             if ( !usuario ){
-                res.status(400).json({
+                return res.status(400).json({
                     msg: 'No existe el usuario'
                 })
             };
@@ -113,7 +113,7 @@ const validarID = async ( id, modelo, res ) => {
         case "modulo":
             const moudulo = await Modulo.findByPk( id );
             if ( !moudulo ){
-                res.status(400).json({
+                return res.status(400).json({
                     msg: 'No existe el modulo'
                 })
             };
