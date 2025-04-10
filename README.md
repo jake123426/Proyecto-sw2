@@ -45,3 +45,7 @@ Sigue estos pasos para configurar el proyecto localmente:
         "dev": "cross-env NODE_ENV=development nodemon app"
         }
         ```
+5. Ejecutar test:
+    ```bash
+    npm run test
+    ```
