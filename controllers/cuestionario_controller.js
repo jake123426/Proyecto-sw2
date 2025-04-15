@@ -95,7 +95,7 @@ const cuestionarioUpdate = async(req, res = response) => {
 
 const validarID = async ( id, modelo, res ) => {
     switch ( modelo ){
-        case "usuario":
+        case "usuario": {
             const usuario = await Usuario.findByPk( id );
             if ( !usuario ){
                 return res.status(400).json({
@@ -103,18 +103,21 @@ const validarID = async ( id, modelo, res ) => {
                 })
             };
             break;
-        case "modulo":
+        }
+        case "modulo": {
             const moudulo = await Modulo.findByPk( id );
             if ( !moudulo ){
                 return res.status(400).json({
                     msg: 'No existe el modulo'
                 })
             };
-            break;        
-        default:
+            break;
+        }
+        default: {
             res.status(400).json({
                 msg: 'Ocurrio un problema al verificar las llaves primarias'
-            });            
+            });
+        }
     }    
     
 }

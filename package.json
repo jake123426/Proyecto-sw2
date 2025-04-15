@@ -7,7 +7,9 @@
     "start": "node app",
     "dev": "NODE_ENV=development nodemon appnodemon app",
     "dev:win": "set NODE_ENV=development&& nodemon app",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,9 @@
     "validator": "^13.11.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0",
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",
     "supertest": "^7.1.0"
