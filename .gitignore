@@ -8,4 +8,4 @@
 # EXCEPTO 
 !.env.example
 
-/.github
+# /.github
