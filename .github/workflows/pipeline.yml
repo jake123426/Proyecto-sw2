@@ -67,7 +67,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=local,source=/tmp/docker-cache
+          cache-from: type=local,src=/tmp/docker-cache
           cache-to: type=local,dest=/tmp/docker-cache-new,mode=max
           builder: aws-builder
       - name: Rotate cache
