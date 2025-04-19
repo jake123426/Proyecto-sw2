@@ -56,7 +56,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}         
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Setup Docker cache Directory
-        run: mkdir -p /tmp/docker-cache       
+        run: |
+          mkdir -p /tmp/docker-cache /tmp/docker-cache-new
+          chmod -R 777 /tmp/docker-cache*
       - name: Build and push
         uses: docker/build-push-action@v6 
         with:
@@ -65,9 +67,15 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=local, src=/tmp/docker-cache
-          cache-to: type=local, dest=/tmp/docker-cache, mode=max
+          cache-from: type=local, source=/tmp/docker-cache
+          cache-to: type=local, dest=/tmp/docker-cache-new, mode=max
           builder: aws-builder
+      - name: Rotate cache
+        if: success()
+        run: |
+          rm -rf /tmp/docker-cache-old
+          mv /tmp/docker-cache /tmp/docker-cache-old
+          mv /tmp/docker-cache-new /tmp/docker-cache
   deploy: 
     runs-on: self-hosted
     needs: build-publish
