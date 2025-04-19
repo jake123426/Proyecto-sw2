@@ -67,8 +67,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=local, src=/tmp/docker-cache
           cache-to: type=local, dest=/tmp/docker-cache, mode=max
-        env:
-          DOCKER_BUILDKIT: 1
+          builder: aws-builder
   deploy: 
     runs-on: self-hosted
     needs: build-publish
