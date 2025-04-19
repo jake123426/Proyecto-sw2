@@ -83,23 +83,14 @@ jobs:
     steps:      
       - name: Stop and remove old container         
         run: | 
-            docker rm -f ${{ env.IMAGE_NAME }} || true
-      - name: Debug variables
-        run: |
-          echo "DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}"
-          echo "IMAGE_NAME: ${{ env.IMAGE_NAME }}"
-          echo "GITHUB_SHA: ${{ github.sha }}"
-          echo "Full image reference: ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"            
+            docker rm -f ${{ env.IMAGE_NAME }} || true                  
       - name: Run container
-        run: |
-          IMAGE="${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Attempting to run image: $IMAGE"
-          docker run -d \
-            --name ${{ env.IMAGE_NAME }} \
-            -e "DB_URI=${{ secrets.DB_URI }}" \
-            --restart unless-stopped \          
-            -p 80:3000 \
-            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: |          
+          docker run \
+          --name ${{ env.IMAGE_NAME }} \
+          -e "DB_URI=${{ secrets.DB_URI }}" \
+          --restart unless-stopped \
+          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
       - name: Health check
         run: |
           curl --retry 5 --retry-delay 10 --fail http://localhost:3000/health
