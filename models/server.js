@@ -10,7 +10,7 @@ class Server {
         this.env = process.env.NODE_ENV;
         this.db_conection = db_conection;
         this.consultasPath = '/api/consulta';
-        this.dialogflowPath = '/api/dialogflow';
+        // this.dialogflowPath = '/api/dialogflow';
         this.pruebaPath = '/api/prueba';
         this.cuestionarioPath = '/api/cuestionario';
         this.usuarioPath = '/api/usuarios';
@@ -54,7 +54,7 @@ class Server {
 
     routes() {
         this.app.use( this.consultasPath, require('../routes/consulta_route'));
-        this.app.use( this.dialogflowPath, require('../routes/dialogflow_route'));
+        // this.app.use( this.dialogflowPath, require('../routes/dialogflow_route'));
         this.app.use( this.pruebaPath, require('../routes/prueba_route'));
         this.app.use( this.cuestionarioPath, require('../routes/cuestionario_route'));
         this.app.use( this.usuarioPath, require('../routes/usuario_route'));

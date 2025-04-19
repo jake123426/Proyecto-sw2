@@ -1,9 +1,9 @@
 const { Router } = require('express');
 
-const { detectIntent } = require('../controllers/dialogflow_controller')
+// const { detectIntent } = require('../controllers/dialogflow_controller')
 
-const router = Router();
+// const router = Router();
 
-router.post('/detectIntent', detectIntent );
+// router.post('/detectIntent', detectIntent );
 
-module.exports = router;
+// module.exports = router;

@@ -1,9 +1,11 @@
 /node_modules
 
-package-lock.json
+# package-lock.json
 
 # Ignora TODOS los archivos que empiecen con .env
 .env*
 
 # EXCEPTO 
 !.env.example
+
+/.github

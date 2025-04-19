@@ -24,7 +24,7 @@ Sigue estos pasos para configurar el proyecto localmente:
 2. Crear en el directorio raiz el archivo `.env` y `.env.development` para desarrollo, posteriomente establecer las variables de entorno.
 3. Instalar paquetes:
     ```bash
-    npm i
+    npm ci
     ```
 4. Ejecutar servidor en modo desarrollo para sistemas Windows:
     ```bash
