@@ -82,12 +82,20 @@ jobs:
     steps:      
       - name: Stop and remove old container         
         run: | 
-            docker rm -f ${{ env.IMAGE_NAME }} || true            
+            docker rm -f ${{ env.IMAGE_NAME }} || true
+      - name: Debug variables
+        run: |
+          echo "DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}"
+          echo "IMAGE_NAME: ${{ env.IMAGE_NAME }}"
+          echo "GITHUB_SHA: ${{ github.sha }}"
+          echo "Full image reference: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"            
       - name: Run container
         run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Attempting to run image: $IMAGE"
           docker run -d \
             --name ${{ env.IMAGE_NAME }} \
-            -e DB_URI=${{ secrets.DB_URI }} \
+            -e "DB_URI=${{ secrets.DB_URI }}" \
             --restart unless-stopped \          
             -p 80:3000 \
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
