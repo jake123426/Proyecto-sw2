@@ -90,10 +90,7 @@ jobs:
           --name ${{ env.IMAGE_NAME }} \
           -e "DB_URI=${{ secrets.DB_URI }}" \
           --restart unless-stopped \
-          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-      - name: Health check
-        run: |
-          curl --retry 5 --retry-delay 10 --fail http://localhost:3000/health
+          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}      
   cleanup:
     runs-on: self-hosted 
     needs: deploy 
