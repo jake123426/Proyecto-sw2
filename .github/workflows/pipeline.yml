@@ -89,6 +89,8 @@ jobs:
           -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
       - name: Health check
         run: |
+          echo "Health check failed"
+          exit 1
           for i in {1..10}; do
             if curl -sSf http://localhost:80/health >/dev/null; then
               echo "Health check passed"
@@ -108,23 +110,7 @@ jobs:
             --name ${{ env.IMAGE_NAME }} \
             -e "DB_URI=${{ secrets.DB_URI }}" \
             --restart unless-stopped \
-            -dp 80:3000 ${{ steps.current_version.outputs.current_image }}
-      # - name: Send email notification
-      #   if: always()
-      #   uses: dawidd6/action-send-mail@v4
-      #   with:
-      #     from: El Jefesito
-      #     server_address: smtp.gmail.com
-      #     server_port: 587
-      #     # server_port: 465
-      #     username: ${{ secrets.EMAIL_USER }}
-      #     password: ${{ secrets.EMAIL_PASSWORD }}
-      #     subject: "Deploy Status: ${{ job.status }}"
-      #     body: |
-      #       Workflow: ${{ github.workflow }}
-      #       Resultado: ${{ job.status }}
-      #       Rollback: ${{ steps.rollback.outcome }}
-      #       Ver más: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            -dp 80:3000 ${{ steps.current_version.outputs.current_image }}      
   notify-deployment:
     runs-on: self-hosted
     needs: deploy
