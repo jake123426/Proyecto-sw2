@@ -83,14 +83,11 @@ jobs:
         run: |
           docker rm -f ${{ env.IMAGE_NAME }} || true          
           docker run \
-          --name ${{ env.IMAGE_NAME }} \
-          -e "DB_URI=${{ secrets.DB_URI }}" \
+          --name ${{ env.IMAGE_NAME }} \          
           --restart unless-stopped \
           -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
       - name: Health check
-        run: |
-          echo "Health check failed"
-          exit 1
+        run: |          
           for i in {1..10}; do
             if curl -sSf http://localhost:80/health >/dev/null; then
               echo "Health check passed"
