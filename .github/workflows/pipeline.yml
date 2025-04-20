@@ -88,12 +88,12 @@ jobs:
     steps: 
       - name: Prune system          
         run: |
-          docker system prune -a -f --volumes --filter "until=24h"
+          docker system prune -a -f --filter "until=24h"
           docker builder prune -f
 
 
 
-          
+
   
   # clean-docker: 
   #   runs-on: self-hosted
