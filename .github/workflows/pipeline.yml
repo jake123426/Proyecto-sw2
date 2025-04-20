@@ -29,8 +29,9 @@ jobs:
         uses: bahmutov/npm-install@v1
         with:
           useRollingCache: true
-      - run: npm t
-      - run: |
+      # - run: npm t
+      - name: Create .env.dev file
+        run: |          
           touch ./.env.dev
           echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
       - name: Run tests
