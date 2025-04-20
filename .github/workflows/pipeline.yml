@@ -83,7 +83,8 @@ jobs:
         run: |
           docker rm -f ${{ env.IMAGE_NAME }} || true          
           docker run \
-          --name ${{ env.IMAGE_NAME }} \          
+          --name ${{ env.IMAGE_NAME }} \
+          -e "DB_URI=${{ secrets.DB_URI }}" \          
           --restart unless-stopped \
           -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
       - name: Health check
