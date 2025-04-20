@@ -70,20 +70,83 @@ jobs:
   deploy: 
     runs-on: self-hosted
     needs: build-publish
-    steps:      
-      - name: Stop and remove old container         
-        run: | 
-            docker rm -f ${{ env.IMAGE_NAME }} || true                  
+    outputs:
+      rollback_status: ${{ steps.rollback.conclusion }}
+    steps:
+      - name: Get current running version
+        id: current_version
+        run: |
+          CURRENT_IMAGE=$(docker inspect --format '{{.Config.Image}}' ${{ env.IMAGE_NAME }} 2>/dev/null || echo "")
+          echo "current_image=${CURRENT_IMAGE}" >> $GITHUB_OUTPUT                   
       - name: Run container
-        run: |          
+        run: |
+          docker rm -f ${{ env.IMAGE_NAME }} || true          
           docker run \
           --name ${{ env.IMAGE_NAME }} \
           -e "DB_URI=${{ secrets.DB_URI }}" \
           --restart unless-stopped \
-          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}      
+          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      - name: Health check
+        run: |
+          for i in {1..10}; do
+            if curl -sSf http://localhost:3000/health >/dev/null; then
+              echo "Health check passed"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check failed"
+          exit 1
+      - name: Rollback if failed
+        id: rollback
+        if: failure() && steps.current_version.outputs.current_image != ''
+        run: |
+          echo "Rolling back to ${CURRENT_IMAGE}"
+          docker rm -f ${{ env.IMAGE_NAME }} || true
+          docker run \
+            --name ${{ env.IMAGE_NAME }} \
+            -e "DB_URI=${{ secrets.DB_URI }}" \
+            --restart unless-stopped \
+            -dp 80:3000 ${{ steps.current_version.outputs.current_image }}
+      # - name: Send email notification
+      #   if: always()
+      #   uses: dawidd6/action-send-mail@v4
+      #   with:
+      #     from: El Jefesito
+      #     server_address: smtp.gmail.com
+      #     server_port: 587
+      #     # server_port: 465
+      #     username: ${{ secrets.EMAIL_USER }}
+      #     password: ${{ secrets.EMAIL_PASSWORD }}
+      #     subject: "Deploy Status: ${{ job.status }}"
+      #     body: |
+      #       Workflow: ${{ github.workflow }}
+      #       Resultado: ${{ job.status }}
+      #       Rollback: ${{ steps.rollback.outcome }}
+      #       Ver más: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  notify-deployment:
+    runs-on: self-hosted
+    needs: deploy
+    if: always()
+    steps:
+      - name: Send deployment notification email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          from: El Jefesito
+          server_address: smtp.gmail.com
+          server_port: 587
+          # server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Deploy Status: ${{ needs.deploy.result }}"
+          body: |
+            Workflow: ${{ github.workflow }}
+            Resultado: ${{ needs.deploy.result }}
+            Rollback: ${{ needs.deploy.outputs.rollback_status || 'No se requirió rollback' }}
+            Ver más: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}      
   cleanup:
     runs-on: self-hosted 
-    needs: deploy 
+    needs: [deploy, notify-deployment]
     if: always()
     steps: 
       - name: Prune system          

@@ -60,6 +60,12 @@ class Server {
         this.app.use( this.usuarioPath, require('../routes/usuario_route'));
         this.app.use( this.moduloPath, require('../routes/modulo_route'));
         this.app.use( this.reportePath, require('../routes/reporte_route'));
+        this.app.get('/health', (req, res) => {
+        res.status(200).json({ 
+            status: 'OK',
+            msg: `Servidor en entorno '${this.env}' escuchando en puerto ${this.port}`
+        });
+        });
     }
 
     listen() {
