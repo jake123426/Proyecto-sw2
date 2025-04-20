@@ -94,7 +94,7 @@ jobs:
               echo "Health check passed"
               exit 0
             fi
-            sleep 5
+            sleep 2
           done
           echo "Health check failed"
           exit 1
@@ -154,7 +154,7 @@ jobs:
       - name: Prune system          
         run: |
           docker system prune -a -f --filter "until=24h"
-          docker builder prune -f
+          docker builder prune -f --filter "until=24h"
 
 
 
