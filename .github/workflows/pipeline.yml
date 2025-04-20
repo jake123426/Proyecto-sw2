@@ -18,22 +18,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: ${{ matrix.node-version }}
-      #     cache: "npm"      
-      # - name: Install dependencies        
-      #   run: npm ci        
-      # - name: Create .env.dev file
-      #   run: |          
-      #     touch ./.env.dev
-      #     echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
-      # - name: Run tests
-      #   run: npm test
-      # - name: Run lint
-      #   run: npm run lint      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"      
+      - name: Install dependencies        
+        run: npm ci        
+      - name: Create .env.dev file
+        run: |          
+          touch ./.env.dev
+          echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
+      - name: Run tests
+        run: npm test
+      - name: Run lint
+        run: npm run lint      
       - name: Save code as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -41,7 +40,6 @@ jobs:
           path: |
             ./
             !./node_modules
-
   build-publish:
     runs-on: self-hosted
     needs: test
@@ -55,10 +53,7 @@ jobs:
         with: 
           username: ${{ env.DOCKERHUB_USERNAME }}         
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # - name: Setup Docker cache Directory
-        # run: |
-        #   mkdir -p /tmp/docker-cache /tmp/docker-cache-new
-        #   chmod -R 777 /tmp/docker-cache*
+      
       - name: Build and push
         uses: docker/build-push-action@v6 
         with:
@@ -67,43 +62,38 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          # cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache
+          # cache-to: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           # cache-from: type=local,src=/tmp/docker-cache
           # cache-to: type=local,dest=/tmp/docker-cache-new,mode=max
-          builder: aws-builder
-      # - name: Rotate cache
-      #   if: success()
-      #   run: |
-      #     mv /tmp/docker-cache /tmp/docker-cache-old
-      #     mv /tmp/docker-cache-new /tmp/docker-cache
-      #     rm -rf /tmp/docker-cache-old
-        # run: find /tmp/docker-cache -type f -mtime +7 -delete # Elimina solo archivos con más de 7 días (conserva cache reciente)
-  # deploy: 
-  #   runs-on: self-hosted
-  #   needs: build-publish
-  #   steps:      
-  #     - name: Stop and remove old container         
-  #       run: | 
-  #           docker rm -f ${{ env.IMAGE_NAME }} || true                  
-  #     - name: Run container
-  #       run: |          
-  #         docker run \
-  #         --name ${{ env.IMAGE_NAME }} \
-  #         -e "DB_URI=${{ secrets.DB_URI }}" \
-  #         --restart unless-stopped \
-  #         -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}      
-  # cleanup:
-  #   runs-on: self-hosted 
-  #   needs: deploy 
-  #   if: always()
-  #   steps: 
-  #     - name: Prune system          
-  #       run: |
-  #         docker system prune -f --filter "until=24h"
-  #         docker builder prune -f
+          builder: aws-builder      
+  deploy: 
+    runs-on: self-hosted
+    needs: build-publish
+    steps:      
+      - name: Stop and remove old container         
+        run: | 
+            docker rm -f ${{ env.IMAGE_NAME }} || true                  
+      - name: Run container
+        run: |          
+          docker run \
+          --name ${{ env.IMAGE_NAME }} \
+          -e "DB_URI=${{ secrets.DB_URI }}" \
+          --restart unless-stopped \
+          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}      
+  cleanup:
+    runs-on: self-hosted 
+    needs: deploy 
+    if: always()
+    steps: 
+      - name: Prune system          
+        run: |
+          docker system prune -a -f --volumes --filter "until=24h"
+          docker builder prune -f
 
 
+
+          
   
   # clean-docker: 
   #   runs-on: self-hosted
@@ -118,3 +108,16 @@ jobs:
   #           docker rm -f my-express-app || true
   #           docker system prune -f --filter "until=24h"
   #           docker builder prune -f
+
+  # Parte del job 'build-publish'
+  # - name: Setup Docker cache Directory
+        # run: |
+        #   mkdir -p /tmp/docker-cache /tmp/docker-cache-new
+        #   chmod -R 777 /tmp/docker-cache*
+  # - name: Rotate cache
+      #   if: success()
+      #   run: |
+      #     mv /tmp/docker-cache /tmp/docker-cache-old
+      #     mv /tmp/docker-cache-new /tmp/docker-cache
+      #     rm -rf /tmp/docker-cache-old
+        # run: find /tmp/docker-cache -type f -mtime +7 -delete # Elimina solo archivos con más de 7 días (conserva cache reciente)
