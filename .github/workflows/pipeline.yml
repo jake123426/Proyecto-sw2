@@ -40,6 +40,7 @@ jobs:
           path: |
             ./
             !./node_modules
+            !./.env.dev
   build-publish:
     runs-on: self-hosted
     needs: test
@@ -89,7 +90,7 @@ jobs:
       - name: Health check
         run: |
           for i in {1..10}; do
-            if curl -sSf http://localhost:3000/health >/dev/null; then
+            if curl -sSf http://localhost:80/health >/dev/null; then
               echo "Health check passed"
               exit 0
             fi
@@ -139,6 +140,7 @@ jobs:
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Deploy Status: ${{ needs.deploy.result }}"
+          to: ${{ secrets.EMAIL_USER }}
           body: |
             Workflow: ${{ github.workflow }}
             Resultado: ${{ needs.deploy.result }}
