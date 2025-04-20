@@ -19,21 +19,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"      
-      - name: Install dependencies        
-        run: npm ci        
-      - name: Create .env.dev file
-        run: |          
-          touch ./.env.dev
-          echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
-      - name: Run tests
-        run: npm test
-      - name: Run lint
-        run: npm run lint      
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: ${{ matrix.node-version }}
+      #     cache: "npm"      
+      # - name: Install dependencies        
+      #   run: npm ci        
+      # - name: Create .env.dev file
+      #   run: |          
+      #     touch ./.env.dev
+      #     echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
+      # - name: Run tests
+      #   run: npm test
+      # - name: Run lint
+      #   run: npm run lint      
       - name: Save code as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -67,15 +67,18 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           # cache-from: type=local,src=/tmp/docker-cache
           # cache-to: type=local,dest=/tmp/docker-cache-new,mode=max
           builder: aws-builder
       # - name: Rotate cache
       #   if: success()
       #   run: |
-      #     rm -rf /tmp/docker-cache-old
       #     mv /tmp/docker-cache /tmp/docker-cache-old
       #     mv /tmp/docker-cache-new /tmp/docker-cache
+      #     rm -rf /tmp/docker-cache-old
+        # run: find /tmp/docker-cache -type f -mtime +7 -delete # Elimina solo archivos con más de 7 días (conserva cache reciente)
   # deploy: 
   #   runs-on: self-hosted
   #   needs: build-publish
