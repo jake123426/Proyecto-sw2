@@ -138,7 +138,7 @@ jobs:
       - name: Prune system          
         run: |
           docker system prune -a -f --filter "until=24h"
-          docker builder prune -f --filter "until=24h"
+          docker buildx prune -a -f --filter "until=24h"
 
 
 
