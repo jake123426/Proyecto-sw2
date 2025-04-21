@@ -33,18 +33,20 @@ describe('GET /api/usuarios/:id', () => {
 
 describe("POST /api/usuarios", () => {
     it("should create a new user and return 200", async () => {
-        userService.create.mockResolvedValue({id: 1, nombre: "Jane Doe", correo: "jane@prueba.com", telefono: 4567})
+        userService.create.mockResolvedValue({
+            id: 1, 
+            nombre: "Jane Doe", 
+            correo: "jane@prueba.com", 
+            telefono: 4567})
         const newUser = { nombre: "Jane Doe", correo: "jane@prueba.com", telefono: 4567 };
         const response = await request(app).post("/api/usuarios").send(newUser);
         expect(response.status).toBe(200);
         expect(response.body.estudiante).toHaveProperty('id');
-        expect(response.body.name).toBe(newUser.name);
-        
+        expect(response.body.name).toBe(newUser.name);        
     });
 
     it("should return 400 if nombre is missing", async () => {
         const response = await request(app).post("/api/usuarios").send({}); // Body vacío
-
         expect(response.status).toBe(400);
     });
 });
