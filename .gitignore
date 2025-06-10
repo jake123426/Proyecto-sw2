@@ -9,3 +9,5 @@
 !.env.example
 
 # /.github
+
+.github/workflows/pipeline.yml.old

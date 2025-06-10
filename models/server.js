@@ -4,7 +4,7 @@ const { dbConexion } = require('../DB/conexion');
 
 class Server {
 
-    constructor({ db_conection = true} = {}) {
+    constructor({ db_conection = false} = {}) {
         this.app  = express();
         this.port = process.env.PORT || 3000;
         this.env = process.env.NODE_ENV;

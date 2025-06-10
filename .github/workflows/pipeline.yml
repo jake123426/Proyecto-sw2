@@ -6,34 +6,40 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-env:  
+
+env:
   IMAGE_NAME: backend-app
   DOCKERHUB_USERNAME: xjake
+
 jobs:
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"      
-      - name: Install dependencies        
-        run: npm ci        
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Create .env.dev file
-        run: |          
-          touch ./.env.dev
-          echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
+        run: |
+          echo "${{ secrets.DEV_ENV_FILE }}" > .env.dev
+
       - name: Run tests
         run: npm test
-        # asd
+
       - name: Run lint
-        run: npm run lint      
+        run: npm run lint
+
       - name: Save code as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -43,75 +49,69 @@ jobs:
             !./node_modules
             !./.env.dev
   build-publish:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Get code from artifact
         uses: actions/download-artifact@v4
         with:
-          name: source-code      
-      - name: Log in to Docker Hub 
-        uses: docker/login-action@v3 
-        with: 
-          username: ${{ env.DOCKERHUB_USERNAME }}         
+          name: source-code
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Build and push
-        uses: docker/build-push-action@v6 
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          # cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache
-          # cache-to: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
-          # cache-from: type=local,src=/tmp/docker-cache
-          # cache-to: type=local,dest=/tmp/docker-cache-new,mode=max
-          builder: aws-builder      
-  deploy: 
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
     needs: build-publish
-    outputs:
-      rollback_status: ${{ steps.rollback.conclusion }}
+    # outputs:
+    #   rollback_status: ${{ steps.rollback.conclusion }}
     steps:
-      - name: Get current running version
-        id: current_version
-        run: |
-          CURRENT_IMAGE=$(docker inspect --format '{{.Config.Image}}' ${{ env.IMAGE_NAME }} 2>/dev/null || echo "")
-          echo "current_image=${CURRENT_IMAGE}" >> $GITHUB_OUTPUT                   
-      - name: Run container
-        run: |
-          docker rm -f ${{ env.IMAGE_NAME }} || true          
-          docker run \
-          --name ${{ env.IMAGE_NAME }} \
-          -e "DB_URI=${{ secrets.DB_URI }}" \
-          --restart unless-stopped \
-          -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-      - name: Health check
-        run: |          
-          for i in {1..10}; do
-            if curl -sSf http://localhost:80/health >/dev/null; then
-              echo "Health check passed"
-              exit 0
+      - name: Deploy via SSH to remote server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            CURRENT_IMAGE=$(docker inspect --format '{{.Config.Image}}' ${{ env.IMAGE_NAME }} 2>/dev/null || echo "")
+            docker rm -f ${{ env.IMAGE_NAME }} || true
+            docker run --name ${{ env.IMAGE_NAME }} \
+              -e "DB_URI=${{ secrets.DB_URI }}" \
+              --restart unless-stopped \
+              -dp 80:3000 ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+            echo "Esperando estado saludable..."
+            for i in {1..10}; do
+              if curl -sSf http://localhost:80/health >/dev/null; then
+                echo "Health check passed"
+                exit 0
+              fi
+              sleep 2
+            done
+
+            echo "Health check failed"
+            if [ -n "$CURRENT_IMAGE" ]; then
+              echo "Haciendo rollback a $CURRENT_IMAGE"
+              docker rm -f ${{ env.IMAGE_NAME }} || true
+              docker run --name ${{ env.IMAGE_NAME }} \
+                -e "DB_URI=${{ secrets.DB_URI }}" \
+                --restart unless-stopped \
+                -dp 80:3000 $CURRENT_IMAGE
             fi
-            sleep 2
-          done
-          echo "Health check failed"
-          exit 1
-      - name: Rollback if failed
-        id: rollback
-        if: failure() && steps.current_version.outputs.current_image != ''
-        run: |
-          echo "Rolling back to ${CURRENT_IMAGE}"
-          docker rm -f ${{ env.IMAGE_NAME }} || true
-          docker run \
-            --name ${{ env.IMAGE_NAME }} \
-            -e "DB_URI=${{ secrets.DB_URI }}" \
-            --restart unless-stopped \
-            -dp 80:3000 ${{ steps.current_version.outputs.current_image }}      
+            exit 1
   notify-deployment:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: deploy
     if: always()
     steps:
@@ -121,53 +121,21 @@ jobs:
           from: El Jefesito
           server_address: smtp.gmail.com
           server_port: 587
-          # server_port: 465
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Deploy Status: ${{ needs.deploy.result }}"
           to: ${{ secrets.EMAIL_USER }}
           body: |
             Workflow: ${{ github.workflow }}
-            Resultado: ${{ needs.deploy.result }}
-            Rollback: ${{ needs.deploy.outputs.rollback_status || 'No se requirió rollback' }}
-            Ver más: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}      
-  cleanup:
-    runs-on: self-hosted 
-    needs: [deploy, notify-deployment]
-    if: always()
-    steps: 
-      - name: Prune system          
-        run: |
-          docker system prune -a -f --filter "until=24h"
-          docker buildx prune -a -f --filter "until=24h"
+            Resultado: ${{ needs.deploy.result }}            
+            Ver más: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-
-
-
-  
-  # clean-docker: 
-  #   runs-on: self-hosted
-  #   needs: build-publish-dockerHub
+  # cleanup:
+  #   runs-on: ubuntu-latest
+  #   needs: [deploy, notify-deployment]
+  #   if: always()
   #   steps:
-  #     # - name: Clean old caches
-  #     #   if: github.ref == 'refs/heads/main'
-  #     #   run: find /tmp/docker-cache -type f -mtime +7 -delete  # Limpieza por antigüedad (7 dias)
-  #     #   run: ls -t /tmp/docker-cache | tail -n +4 | xargs rm -f # Mantener solo los 4 builds más recientes
-  #     - name: Clean up old cache and unused containers         
-  #       run: | 
-  #           docker rm -f my-express-app || true
-  #           docker system prune -f --filter "until=24h"
-  #           docker builder prune -f
-
-  # Parte del job 'build-publish'
-  # - name: Setup Docker cache Directory
-        # run: |
-        #   mkdir -p /tmp/docker-cache /tmp/docker-cache-new
-        #   chmod -R 777 /tmp/docker-cache*
-  # - name: Rotate cache
-      #   if: success()
-      #   run: |
-      #     mv /tmp/docker-cache /tmp/docker-cache-old
-      #     mv /tmp/docker-cache-new /tmp/docker-cache
-      #     rm -rf /tmp/docker-cache-old
-        # run: find /tmp/docker-cache -type f -mtime +7 -delete # Elimina solo archivos con más de 7 días (conserva cache reciente)
+  #     - name: Prune Docker
+  #       run: |
+  #         docker system prune -a -f --filter "until=24h"
+  #         docker buildx prune -a -f --filter "until=24h"
